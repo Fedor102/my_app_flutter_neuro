@@ -14,9 +14,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.2.1
   provider: ^6.1.2
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.2.2  # Зависимость для работы с локальным хранилищем
   path_provider: ^2.1.2
-  sqflite: ^2.3.2
+  sqflite: ^2.3.2  # Зависимость для работы с SQLite базой данных
   sqflite_common_ffi: ^2.3.2+1
   google_fonts: ^6.2.1
   flutter_dotenv: ^5.1.0
@@ -33,4 +33,4 @@ flutter:
   uses-material-design: true
   
   assets:
-    - .env
+    - .env  # Убедитесь, что файл .env находится в корне вашего проекта
