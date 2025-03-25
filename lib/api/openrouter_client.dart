@@ -4,72 +4,63 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 // Import Flutter core classes
 import 'package:flutter/foundation.dart';
-// Import package for working with .env files
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../utils/api_storage.dart';
 
 // Класс клиента для работы с API OpenRouter
 class OpenRouterClient {
-  // API ключ для авторизации
-  final String? apiKey;
-  // Базовый URL API
-  final String? baseUrl;
-  // Заголовки HTTP запросов
-  final Map<String, String> headers;
+  String? apiKey;
+  String? baseUrl;
+  Map<String, String> headers = {
+    'Content-Type': 'application/json',
+    'X-Title': 'AI Chat Flutter',
+  };
 
-  // Единственный экземпляр класса (Singleton)
-  static final OpenRouterClient _instance = OpenRouterClient._internal();
-
-  // Фабричный метод для получения экземпляра
-  factory OpenRouterClient() {
-    return _instance;
+  // Конструктор
+  OpenRouterClient() {
+    _initialize();
   }
 
-  // Приватный конструктор для реализации Singleton
-  OpenRouterClient._internal()
-      : apiKey =
-            dotenv.env['OPENROUTER_API_KEY'], // Получение API ключа из .env
-        baseUrl = dotenv.env['BASE_URL'], // Получение базового URL из .env
-        headers = {
-          'Authorization':
-              'Bearer ${dotenv.env['OPENROUTER_API_KEY']}', // Заголовок авторизации
-          'Content-Type': 'application/json', // Указание типа контента
-          'X-Title': 'AI Chat Flutter', // Название приложения
-        } {
-    // Инициализация клиента
-    _initializeClient();
-  }
-
-  // Метод инициализации клиента
-  void _initializeClient() {
-    try {
-      if (kDebugMode) {
-        print('Initializing OpenRouterClient...');
-        print('Base URL: $baseUrl');
-      }
-
-      // Проверка наличия API ключа
-      if (apiKey == null) {
-        throw Exception('OpenRouter API key not found in .env');
-      }
-      // Проверка наличия базового URL
-      if (baseUrl == null) {
-        throw Exception('BASE_URL not found in .env');
-      }
-
-      if (kDebugMode) {
-        print('OpenRouterClient initialized successfully');
-      }
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        print('Error initializing OpenRouterClient: $e');
-        print('Stack trace: $stackTrace');
-      }
-      rethrow;
+  Future<void> _initialize() async {
+    apiKey = await ApiStorage.getApiKey();
+    baseUrl = await ApiStorage.getBaseUrl() ?? 'https://openrouter.ai/api/v1';
+    
+    if (apiKey != null && apiKey!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $apiKey';
     }
+  }
+
+  // Метод проверки готовности клиента
+  Future<bool> isReady() async {
+    if (apiKey == null) {
+      await _initialize();
+    }
+    return apiKey != null && apiKey!.isNotEmpty;
+  }
+
+  // Метод для обновления клиента после изменения настроек
+  static Future<void> resetInstance() async {
+    _instance = OpenRouterClient();
+    await _instance._initialize();
+  }
+
+  // Приватный статический экземпляр
+  static OpenRouterClient _instance = OpenRouterClient();
+
+  // Фабричный метод
+  factory OpenRouterClient.instance() {
+    return _instance;
   }
 
   // Метод получения списка доступных моделей
   Future<List<Map<String, dynamic>>> getModels() async {
+    if (!await isReady()) {
+      return [
+        {'id': 'deepseek-coder', 'name': 'DeepSeek'},
+        {'id': 'claude-3-sonnet', 'name': 'Claude 3.5 Sonnet'},
+        {'id': 'gpt-3.5-turbo', 'name': 'GPT-3.5 Turbo'},
+      ];
+    }
+
     try {
       // Выполнение GET запроса для получения моделей
       final response = await http.get(
@@ -134,6 +125,10 @@ class OpenRouterClient {
 
   // Метод отправки сообщения через API
   Future<Map<String, dynamic>> sendMessage(String message, String model) async {
+    if (!await isReady()) {
+      return {'error': 'API key not configured. Please set up your API key in settings.'};
+    }
+
     try {
       // Подготовка данных для отправки
       final data = {
@@ -141,10 +136,8 @@ class OpenRouterClient {
         'messages': [
           {'role': 'user', 'content': message} // Сообщение пользователя
         ],
-        'max_tokens': int.parse(dotenv.env['MAX_TOKENS'] ??
-            '1000'), // Максимальное количество токенов
-        'temperature': double.parse(
-            dotenv.env['TEMPERATURE'] ?? '0.7'), // Температура генерации
+        'max_tokens': 1000, // Максимальное количество токенов
+        'temperature': 0.7, // Температура генерации
         'stream': false, // Отключение потоковой передачи
       };
 

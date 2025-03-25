@@ -234,11 +234,11 @@ class ChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ErrorBoundary(
-      child: Scaffold(
-        backgroundColor: const Color(0xFF1E1E1E),
-        appBar: _buildAppBar(context),
-        body: SafeArea(
+    return Scaffold(
+      backgroundColor: const Color(0xFF1E1E1E),
+      appBar: _buildAppBar(context),
+      body: ErrorBoundary(
+        child: SafeArea(
           child: Column(
             children: [
               Expanded(
@@ -282,7 +282,10 @@ class ChatScreen extends StatelessWidget {
               style: TextStyle(color: Colors.white70, fontSize: 12),
               overflow: TextOverflow.ellipsis,
             ),
+            menuMaxHeight: 300,
             dropdownColor: const Color(0xFF333333),
+            isDense: false,
+            itemHeight: 72,
             style: const TextStyle(color: Colors.white, fontSize: 12),
             isExpanded: true,
             underline: Container(
@@ -298,50 +301,54 @@ class ChatScreen extends StatelessWidget {
                 .map<DropdownMenuItem<String>>((Map<String, dynamic> model) {
               return DropdownMenuItem<String>(
                 value: model['id'],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      model['name'] ?? '',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Tooltip(
-                          message: 'Входные токены',
-                          child: const Icon(Icons.arrow_upward, size: 12),
-                        ),
-                        Text(
-                          chatProvider.formatPricing(
-                              double.tryParse(model['pricing']?['prompt']) ??
-                                  0.0),
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                        const SizedBox(width: 8),
-                        Tooltip(
-                          message: 'Генерация',
-                          child: const Icon(Icons.arrow_downward, size: 12),
-                        ),
-                        Text(
-                          chatProvider.formatPricing(double.tryParse(
-                                  model['pricing']?['completion']) ??
-                              0.0),
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                        const SizedBox(width: 8),
-                        Tooltip(
-                          message: 'Контекст',
-                          child: const Icon(Icons.memory, size: 12),
-                        ),
-                        Text(
-                          ' ${model['context_length'] ?? '0'}',
-                          style: const TextStyle(fontSize: 10),
-                        ),
-                      ],
-                    ),
-                  ],
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        model['name'] ?? '',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Tooltip(
+                            message: 'Входные токены',
+                            child: const Icon(Icons.arrow_upward, size: 12),
+                          ),
+                          Text(
+                            chatProvider.formatPricing(
+                                double.tryParse(model['pricing']?['prompt']) ??
+                                    0.0),
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: 'Генерация',
+                            child: const Icon(Icons.arrow_downward, size: 12),
+                          ),
+                          Text(
+                            chatProvider.formatPricing(double.tryParse(
+                                    model['pricing']?['completion']) ??
+                                0.0),
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                          const SizedBox(width: 8),
+                          Tooltip(
+                            message: 'Контекст',
+                            child: const Icon(Icons.memory, size: 12),
+                          ),
+                          Text(
+                            ' ${model['context_length'] ?? '0'}',
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             }).toList(),

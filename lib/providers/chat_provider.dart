@@ -18,7 +18,7 @@ import '../services/analytics_service.dart';
 // Основной класс провайдера для управления состоянием чата
 class ChatProvider with ChangeNotifier {
   // Клиент для работы с API
-  final OpenRouterClient _api = OpenRouterClient();
+  OpenRouterClient _api = OpenRouterClient.instance();
   // Список сообщений чата
   final List<ChatMessage> _messages = [];
   // Логи для отладки
@@ -58,6 +58,13 @@ class ChatProvider with ChangeNotifier {
   ChatProvider() {
     // Инициализация провайдера
     _initializeProvider();
+  }
+
+  // Метод реинициализации после изменения настроек
+  Future<void> reinitialize() async {
+    OpenRouterClient.resetInstance();
+    _api = OpenRouterClient.instance();
+    await _initializeProvider();
   }
 
   // Метод инициализации провайдера
