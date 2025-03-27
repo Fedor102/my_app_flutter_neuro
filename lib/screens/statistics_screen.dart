@@ -168,7 +168,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Widget build(BuildContext context) {
     final statistics = _analyticsService.getStatistics();
     final responseTimeStats = _analyticsService.getResponseTimeStats();
-    final messageLengthStats = _analyticsService.getMessageLengthStats();
+
 
     return Scaffold(
       appBar: AppBar(
